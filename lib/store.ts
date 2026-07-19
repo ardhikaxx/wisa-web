@@ -6,7 +6,7 @@ import type {
   InvoiceHistoryEntry,
   ServicePreset,
 } from '@/types/invoice'
-import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal } from './helpers'
+import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData } from './helpers'
 import { DEFAULT_SERVICE_PRESETS } from './constants'
 
 const STORAGE_KEY_INVOICE = 'misa-invoice-data'
@@ -43,6 +43,7 @@ interface InvoiceStore {
   setData: (data: InvoiceData) => void
   updateData: (partial: Partial<InvoiceData>) => void
   resetData: () => void
+  loadSampleData: () => void
   saveToHistory: () => void
   loadFromHistory: (id: string) => void
   duplicateFromHistory: (id: string) => void
@@ -184,6 +185,12 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     const presets = get().servicePresets.filter((p) => p.id !== id)
     set({ servicePresets: presets })
     saveToStorage(STORAGE_KEY_PRESETS, presets)
+  },
+
+  loadSampleData: () => {
+    const sample = getSampleInvoiceData()
+    set({ data: sample })
+    saveToStorage(STORAGE_KEY_INVOICE, sample)
   },
 
   setOnboardingDone: (done) => {

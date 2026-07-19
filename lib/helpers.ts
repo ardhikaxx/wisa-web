@@ -223,3 +223,154 @@ export function generateInvoiceSummary(data: InvoiceData): string {
   }
   return lines.join('\n')
 }
+
+const SATUAN = ['', 'Ribu', 'Juta', 'Miliar', 'Triliun']
+const ANGKA = [
+  '', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima', 'Enam', 'Tujuh', 'Delapan', 'Sembilan',
+]
+const BELASAN = [
+  'Sepuluh', 'Sebelas', 'Dua Belas', 'Tiga Belas', 'Empat Belas', 'Lima Belas',
+  'Enam Belas', 'Tujuh Belas', 'Delapan Belas', 'Sembilan Belas',
+]
+
+function terbilangRatusan(n: number): string {
+  const ratus = Math.floor(n / 100)
+  const sisa = n % 100
+  let hasil = ''
+  if (ratus === 1) hasil += 'Seratus'
+  else if (ratus > 1) hasil += ANGKA[ratus] + ' Ratus'
+  if (sisa === 0) return hasil
+  if (hasil) hasil += ' '
+  if (sisa < 10) hasil += ANGKA[sisa]
+  else if (sisa < 20) hasil += BELASAN[sisa - 10]
+  else {
+    const puluh = Math.floor(sisa / 10)
+    const sat = sisa % 10
+    hasil += ANGKA[puluh] + ' Puluh'
+    if (sat > 0) hasil += ' ' + ANGKA[sat]
+  }
+  return hasil
+}
+
+export function numberToWords(amount: number): string {
+  if (amount === 0) return 'Nol Rupiah'
+
+  let n = Math.abs(Math.round(amount))
+  let result = ''
+
+  for (let i = SATUAN.length - 1; i >= 0; i--) {
+    const divisor = Math.pow(1000, i)
+    if (n >= divisor) {
+      const bagian = Math.floor(n / divisor)
+      let kataBagian = ''
+      if (bagian === 1 && i === 1) kataBagian = 'Seribu'
+      else if (bagian < 10) kataBagian = ANGKA[bagian]
+      else if (bagian < 20) kataBagian = BELASAN[bagian - 10]
+      else if (bagian < 100) {
+        const puluh = Math.floor(bagian / 10)
+        const sat = bagian % 10
+        kataBagian = ANGKA[puluh] + ' Puluh' + (sat > 0 ? ' ' + ANGKA[sat] : '')
+      } else {
+        kataBagian = terbilangRatusan(bagian)
+      }
+      result += (result ? ' ' : '') + kataBagian + ' ' + SATUAN[i]
+      n %= divisor
+    }
+  }
+
+  return result.trim() + ' Rupiah'
+}
+
+export function getSampleInvoiceData(): InvoiceData {
+  const id = crypto.randomUUID?.() ?? Date.now().toString()
+  const now = new Date().toISOString().split('T')[0]
+  const later = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
+
+  return {
+    businessInfo: {
+      businessName: 'CV Kreatif Studio',
+      logo: null,
+      address: 'Jl. Merdeka No. 45, Kelurahan Sukamaju, Kecamatan Cimahi, Bandung 40512',
+      phone: '0812-3456-7890',
+      email: 'hello@kreatifstudio.com',
+      website: 'www.kreatifstudio.com',
+      additionalInfo: 'NPWP: 01.234.567.8-901.000',
+    },
+    invoiceInfo: {
+      invoiceNumber: generateInvoiceNumber(),
+      issueDate: now,
+      dueDate: later,
+      paymentStatus: 'pending',
+      currency: 'IDR',
+    },
+    customerInfo: {
+      customerName: 'Budi Santoso',
+      companyName: 'PT. Maju Bersama',
+      customerAddress: 'Jl. Sudirman No. 88, Jakarta Pusat 10210',
+      customerEmail: 'budi@maju bersama.com',
+      customerPhone: '0811-222-333',
+      additionalNotes: '',
+    },
+    items: [
+      {
+        id: crypto.randomUUID?.() ?? 's1',
+        name: 'Jasa Pembuatan Website Company Profile',
+        description: 'Website responsif 5 halaman + admin panel + hosting 1 tahun',
+        quantity: 1,
+        unit: 'Proyek',
+        price: 5000000,
+        discountType: 'percentage',
+        discountValue: 10,
+      },
+      {
+        id: crypto.randomUUID?.() ?? 's2',
+        name: 'Jasa Desain Logo',
+        description: 'Konsep 3 pilihan + revisi 2x + file siap cetak',
+        quantity: 1,
+        unit: 'Paket',
+        price: 750000,
+        discountType: 'percentage',
+        discountValue: 0,
+      },
+      {
+        id: crypto.randomUUID?.() ?? 's3',
+        name: 'Jasa Penulisan Konten',
+        description: 'Copywriting 5 halaman landing page',
+        quantity: 5,
+        unit: 'Halaman',
+        price: 100000,
+        discountType: 'fixed',
+        discountValue: 50000,
+      },
+    ],
+    pricing: {
+      discountType: 'percentage',
+      discountValue: 0,
+      taxType: 'percentage',
+      taxValue: 11,
+      taxEnabled: true,
+      additionalFees: [
+        { id: 'fee1', name: 'Biaya Domain & Hosting', amount: 350000 },
+      ],
+    },
+    paymentInfo: {
+      paymentMethod: 'transfer',
+      bankName: 'Bank Central Asia (BCA)',
+      accountName: 'CV Kreatif Studio',
+      accountNumber: '123-456-7890',
+      qrisImage: null,
+      paymentNotes: 'Pembayaran dapat dilakukan melalui transfer bank atau QRIS',
+    },
+    notes: {
+      invoiceNotes: 'Terima kasih telah mempercayakan project ini kepada kami. Kami akan segera memulai pengerjaan setelah pembayaran diterima.',
+      terms: 'Pembayaran dilakukan maksimal 7 hari setelah invoice diterbitkan. Keterlambatan pembayaran akan dikenakan biaya administrasi 2% per bulan.',
+      selectedNoteTemplate: 'thanks',
+    },
+    selectedTemplate: 'modern',
+    metadata: {
+      id: id + '-sample',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  }
+}
