@@ -10,6 +10,7 @@ import {
   calculateAdditionalFeesTotal,
   calculateGrandTotal,
   calculateSubtotal,
+  numberToWords,
 } from '@/lib/helpers'
 
 interface Props {
@@ -135,6 +136,11 @@ export function TemplateMinimal({ data }: Props) {
           <span>Total</span>
           <span>{formatCurrency(grandTotal)}</span>
         </div>
+        {grandTotal > 0 && (
+          <p className="mt-1 text-[10px] italic text-gray-400">
+            Terbilang: {numberToWords(grandTotal)}
+          </p>
+        )}
       </div>
 
       {/* Payment - minimal */}

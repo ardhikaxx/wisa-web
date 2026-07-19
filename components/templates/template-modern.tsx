@@ -10,6 +10,7 @@ import {
   calculateAdditionalFeesTotal,
   calculateGrandTotal,
   calculateSubtotal,
+  numberToWords,
 } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
@@ -190,6 +191,11 @@ export function TemplateModern({ data }: Props) {
           <span>Total</span>
           <span className="text-primary">{formatCurrency(grandTotal)}</span>
         </div>
+        {grandTotal > 0 && (
+          <p className="mt-1 text-[10px] italic text-muted-foreground">
+            Terbilang: {numberToWords(grandTotal)}
+          </p>
+        )}
       </div>
 
       {/* Payment Info */}
