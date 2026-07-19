@@ -11,6 +11,7 @@ import {
   calculateGrandTotal,
   calculateSubtotal,
   numberToWords,
+  calculateTaxBreakdown,
 } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
@@ -122,12 +123,12 @@ export function TemplateNota({ data }: Props) {
             <span className="text-destructive">-{formatCurrency(globalDiscount)}</span>
           </div>
         )}
-        {pricing.taxEnabled && tax > 0 && (
-          <div className="flex justify-between">
-            <span>Pajak</span>
-            <span>{formatCurrency(tax)}</span>
+        {calculateTaxBreakdown(afterDiscount, pricing).map(t => (
+          <div key={t.name} className="flex justify-between">
+            <span>{t.name}</span>
+            <span>{formatCurrency(t.amount)}</span>
           </div>
-        )}
+        ))}
         {additionalFeesTotal > 0 && (
           <div className="flex justify-between">
             <span>Biaya Lain</span>

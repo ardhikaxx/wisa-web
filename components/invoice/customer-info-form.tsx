@@ -1,14 +1,19 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useInvoiceStore } from '@/lib/store'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { ContactManager } from './contact-manager'
+import { BookUser } from 'lucide-react'
+import type { CustomerContact } from '@/types/invoice'
 
 export function CustomerInfoForm() {
   const { data, updateData } = useInvoiceStore()
   const { customerInfo } = data
+  const [showContacts, setShowContacts] = useState(false)
 
   const update = useCallback(
     (partial: Partial<typeof customerInfo>) => {
@@ -17,8 +22,31 @@ export function CustomerInfoForm() {
     [customerInfo, updateData]
   )
 
+  const handleSelectContact = useCallback((contact: CustomerContact) => {
+    updateData({
+      customerInfo: {
+        ...customerInfo,
+        contactId: contact.id,
+        customerName: contact.name,
+        companyName: contact.company,
+        customerAddress: contact.address,
+        customerEmail: contact.email,
+        customerPhone: contact.phone,
+      },
+    })
+  }, [customerInfo, updateData])
+
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">Data Pelanggan</span>
+        <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={() => setShowContacts(true)}>
+          <BookUser className="h-3.5 w-3.5" />
+          Pilih Kontak
+        </Button>
+      </div>
+      <ContactManager open={showContacts} onOpenChange={setShowContacts} onSelect={handleSelectContact} />
+
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label htmlFor="customerName">Nama Pelanggan *</Label>

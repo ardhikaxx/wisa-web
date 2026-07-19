@@ -139,6 +139,21 @@ export function InvoiceActions() {
     window.print()
   }, [validateInvoice, saveToHistory])
 
+  const handlePrint58mm = useCallback(() => {
+    if (!validateInvoice()) return
+    saveToHistory()
+    const style = document.createElement('style')
+    style.id = 'print-58mm-style'
+    style.textContent = `@page { size: 58mm auto; margin: 0; } #invoice-preview { width: 58mm; max-width: 58mm; } #invoice-preview * { font-size: 7px !important; } #invoice-preview table { font-size: 6px !important; }`
+    document.head.appendChild(style)
+    document.body.classList.add('print-58mm')
+    window.print()
+    setTimeout(() => {
+      document.body.classList.remove('print-58mm')
+      document.getElementById('print-58mm-style')?.remove()
+    }, 500)
+  }, [validateInvoice, saveToHistory])
+
   const handleShare = useCallback(async () => {
     if (!validateInvoice()) return
 
@@ -202,6 +217,10 @@ export function InvoiceActions() {
             <DropdownMenuItem onClick={handlePrint} className="gap-2">
               <Printer className="h-4 w-4" />
               Print Invoice
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handlePrint58mm} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Cetak Nota (58mm)
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleShare} className="gap-2">
               <Share2 className="h-4 w-4" />

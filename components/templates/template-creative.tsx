@@ -11,6 +11,7 @@ import {
   calculateGrandTotal,
   calculateSubtotal,
   numberToWords,
+  calculateTaxBreakdown,
 } from '@/lib/helpers'
 import { PaymentSummary } from '@/components/invoice/payment-summary'
 
@@ -158,12 +159,12 @@ export function TemplateCreative({ data }: Props) {
               <span>-{formatCurrency(globalDiscount)}</span>
             </div>
           )}
-          {pricing.taxEnabled && tax > 0 && (
-            <div className="flex justify-between text-muted-foreground">
-              <span>Pajak {pricing.taxType === 'percentage' ? `(${pricing.taxValue}%)` : ''}</span>
-              <span>{formatCurrency(tax)}</span>
+          {calculateTaxBreakdown(afterDiscount, pricing).map(t => (
+            <div key={t.name} className="flex justify-between text-muted-foreground">
+              <span>{t.name}</span>
+              <span>{formatCurrency(t.amount)}</span>
             </div>
-          )}
+          ))}
           {additionalFeesTotal > 0 && (
             <div className="flex justify-between text-muted-foreground">
               <span>Biaya Lain</span>

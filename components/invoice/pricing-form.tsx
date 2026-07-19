@@ -25,8 +25,9 @@ import {
   calculateDpAmount,
   calculateRemainingBalance,
   formatCurrency,
+  calculateTaxBreakdown,
 } from '@/lib/helpers'
-import type { AdditionalFee, PaymentMilestone } from '@/types/invoice'
+import type { AdditionalFee, PaymentMilestone, TaxEntry } from '@/types/invoice'
 
 export function PricingForm() {
   const { data, updateData } = useInvoiceStore()
@@ -62,6 +63,34 @@ export function PricingForm() {
     (id: string) => {
       const fees = (pricing.additionalFees || []).filter((f) => f.id !== id)
       updatePricing({ additionalFees: fees })
+    },
+    [pricing, updateData]
+  )
+
+  const addTax = useCallback(() => {
+    const tax: TaxEntry = {
+      id: Date.now().toString(),
+      name: 'PPN',
+      type: 'percentage',
+      value: 11,
+    }
+    updatePricing({ taxes: [...(pricing.taxes || []), tax] })
+  }, [pricing, updateData])
+
+  const updateTax = useCallback(
+    (id: string, partial: Partial<TaxEntry>) => {
+      const list = (pricing.taxes || []).map((t) =>
+        t.id === id ? { ...t, ...partial } : t
+      )
+      updatePricing({ taxes: list })
+    },
+    [pricing, updateData]
+  )
+
+  const removeTax = useCallback(
+    (id: string) => {
+      const list = (pricing.taxes || []).filter((t) => t.id !== id)
+      updatePricing({ taxes: list })
     },
     [pricing, updateData]
   )
@@ -146,42 +175,58 @@ export function PricingForm() {
 
       <div className="rounded-lg border p-3">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm font-medium">Pajak</span>
-          <Switch
-            checked={pricing.taxEnabled}
-            onCheckedChange={(v) => updatePricing({ taxEnabled: v })}
-          />
+          <span className="text-sm font-medium">Pajak (PPN, PPh, dll)</span>
+          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={addTax}>
+            <Plus className="h-3.5 w-3.5" />
+          </Button>
         </div>
-        {pricing.taxEnabled && (
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Label className="text-[10px] text-muted-foreground">Nilai</Label>
+        <div className="space-y-2">
+          {(pricing.taxes || []).length === 0 && (
+            <p className="text-xs text-muted-foreground">Belum ada pajak</p>
+          )}
+          {(pricing.taxes || []).map((tax) => (
+            <div key={tax.id} className="flex items-center gap-2">
+              <Input
+                placeholder="Nama pajak"
+                className="flex-[1.5]"
+                value={tax.name}
+                onChange={(e) => updateTax(tax.id, { name: e.target.value })}
+              />
+              <div className="w-16">
+                <Select
+                  value={tax.type}
+                  onValueChange={(v) => v && updateTax(tax.id, { type: v as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">%</SelectItem>
+                    <SelectItem value="fixed">Rp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Input
                 type="number"
                 min={0}
-                value={pricing.taxValue || ''}
+                placeholder="0"
+                className="w-20"
+                value={tax.value || ''}
                 onChange={(e) =>
-                  updatePricing({ taxValue: Math.max(0, Number(e.target.value)) })
+                  updateTax(tax.id, { value: Math.max(0, Number(e.target.value)) })
                 }
               />
-            </div>
-            <div className="w-20">
-              <Label className="text-[10px] text-muted-foreground">Tipe</Label>
-              <Select
-                value={pricing.taxType}
-                onValueChange={(v) => v && updatePricing({ taxType: v as any })}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-destructive"
+                onClick={() => removeTax(tax.id)}
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="percentage">Persen</SelectItem>
-                  <SelectItem value="fixed">Nominal</SelectItem>
-                </SelectContent>
-              </Select>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
             </div>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
       <div className="rounded-lg border p-3">
@@ -352,14 +397,12 @@ export function PricingForm() {
             <span className="text-destructive">-{formatCurrency(globalDiscount)}</span>
           </div>
         )}
-        {pricing.taxEnabled && tax > 0 && (
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">
-              Pajak ({pricing.taxType === 'percentage' ? `${pricing.taxValue}%` : 'Rp'})
-            </span>
-            <span>{formatCurrency(tax)}</span>
+        {calculateTaxBreakdown(afterDiscount, pricing).map(t => (
+          <div key={t.name} className="flex justify-between">
+            <span className="text-muted-foreground">{t.name}</span>
+            <span>{formatCurrency(t.amount)}</span>
           </div>
-        )}
+        ))}
         {additionalFeesTotal > 0 && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Biaya Tambahan</span>

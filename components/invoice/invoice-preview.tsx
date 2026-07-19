@@ -14,7 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { TEMPLATE_OPTIONS } from '@/lib/constants'
-import { LayoutTemplate } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { LayoutTemplate, Palette } from 'lucide-react'
 
 const templates = {
   modern: TemplateModern,
@@ -30,7 +32,7 @@ export function InvoicePreview() {
 
   return (
     <div className="w-full max-w-[210mm]">
-      <div className="no-print mb-4 flex items-center justify-between">
+        <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Template</span>
@@ -50,9 +52,25 @@ export function InvoicePreview() {
             </SelectContent>
           </Select>
         </div>
+        <div className="flex items-center gap-2">
+          <Palette className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm text-muted-foreground">Warna</span>
+          <Input
+            type="color"
+            className="h-8 w-10 cursor-pointer border p-0.5"
+            value={data.accentColor}
+            onChange={(e) => updateData({ accentColor: e.target.value })}
+          />
+        </div>
       </div>
 
-      <div id="invoice-preview" className="overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5">
+      <style>{`
+        .invoice-preview-custom {
+          --primary: ${data.accentColor};
+          --ring: ${data.accentColor};
+        }
+      `}</style>
+      <div id="invoice-preview" className="invoice-preview-custom overflow-hidden rounded-xl bg-white shadow-lg ring-1 ring-black/5">
         <Template data={data} />
       </div>
     </div>

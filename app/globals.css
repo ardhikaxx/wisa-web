@@ -154,3 +154,10 @@
     margin: 10mm;
   }
 }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}

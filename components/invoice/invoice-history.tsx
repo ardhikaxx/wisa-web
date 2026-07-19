@@ -182,7 +182,7 @@ export function InvoiceHistory({ open, onOpenChange }: Props) {
                             size="icon"
                             className="h-7 w-7"
                             onClick={() => handleDuplicate(entry.id)}
-                            title="Duplikasi"
+                            title="Edit Sebagai Baru"
                           >
                             <Copy className="h-3.5 w-3.5" />
                           </Button>

@@ -1,4 +1,4 @@
-import type { InvoiceData, ServiceItem, Pricing } from '@/types/invoice'
+import type { InvoiceData, ServiceItem, Pricing, TaxEntry } from '@/types/invoice'
 
 export function formatCurrency(
   amount: number,
@@ -61,11 +61,19 @@ export function calculateGlobalDiscount(subtotal: number, pricing: Pricing): num
 }
 
 export function calculateTaxableAmount(amount: number, pricing: Pricing): number {
-  if (!pricing.taxEnabled || !pricing.taxValue || pricing.taxValue <= 0) return 0
-  if (pricing.taxType === 'percentage') {
-    return (amount * pricing.taxValue) / 100
-  }
-  return pricing.taxValue
+  return (pricing.taxes || []).reduce((sum, tax) => {
+    if (!tax.value || tax.value <= 0) return sum
+    if (tax.type === 'percentage') return sum + (amount * tax.value) / 100
+    return sum + tax.value
+  }, 0)
+}
+
+export function calculateTaxBreakdown(amount: number, pricing: Pricing): { name: string; amount: number }[] {
+  return (pricing.taxes || []).map((tax) => {
+    if (!tax.value || tax.value <= 0) return { name: tax.name, amount: 0 }
+    if (tax.type === 'percentage') return { name: tax.name, amount: (amount * tax.value) / 100 }
+    return { name: tax.name, amount: tax.value }
+  }).filter(t => t.amount > 0)
 }
 
 export function calculateAdditionalFeesTotal(pricing: Pricing): number {
@@ -107,14 +115,20 @@ export function generateInvoiceNumber(): string {
 
 export function migrateInvoiceData(data: Partial<InvoiceData>): InvoiceData {
   const defaults = getDefaultInvoiceData()
-  return {
+  const oldPricing = data.pricing as any || {}
+  const migrated = {
     ...defaults,
     ...data,
     pricing: {
       ...defaults.pricing,
-      ...(data.pricing || {}),
-      additionalFees: data.pricing?.additionalFees || defaults.pricing.additionalFees,
-      milestones: data.pricing?.milestones || defaults.pricing.milestones,
+      ...oldPricing,
+      taxes: oldPricing.taxes || (
+        oldPricing.taxEnabled && oldPricing.taxValue
+          ? [{ id: 'tax-1', name: oldPricing.taxType === 'percentage' ? `PPN ${oldPricing.taxValue}%` : 'Pajak', type: oldPricing.taxType || 'percentage', value: oldPricing.taxValue }]
+          : defaults.pricing.taxes
+      ),
+      additionalFees: oldPricing.additionalFees || defaults.pricing.additionalFees,
+      milestones: oldPricing.milestones || defaults.pricing.milestones,
     },
     paymentInfo: {
       ...defaults.paymentInfo,
@@ -142,6 +156,7 @@ export function migrateInvoiceData(data: Partial<InvoiceData>): InvoiceData {
       ...(data.businessInfo || {}),
     },
   }
+  return migrated
 }
 
 export function formatDate(dateStr: string): string {
@@ -191,9 +206,7 @@ export function getDefaultInvoiceData(
     pricing: {
       discountType: 'percentage',
       discountValue: 0,
-      taxType: 'percentage',
-      taxValue: 11,
-      taxEnabled: false,
+      taxes: [],
       additionalFees: [],
       paymentTerm: 'full',
       dpEnabled: false,
@@ -215,6 +228,7 @@ export function getDefaultInvoiceData(
       selectedNoteTemplate: 'thanks',
     },
     selectedTemplate: 'modern',
+    accentColor: '#0d9488',
     metadata: {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -405,9 +419,10 @@ export function getSampleInvoiceData(): InvoiceData {
     pricing: {
       discountType: 'percentage',
       discountValue: 0,
-      taxType: 'percentage',
-      taxValue: 11,
-      taxEnabled: true,
+      taxes: [
+        { id: 'tax-ppn', name: 'PPN 11%', type: 'percentage', value: 11 },
+        { id: 'tax-pph', name: 'PPh 23', type: 'percentage', value: 2 },
+      ],
       additionalFees: [
         { id: 'fee1', name: 'Biaya Domain & Hosting', amount: 350000 },
       ],
@@ -434,6 +449,7 @@ export function getSampleInvoiceData(): InvoiceData {
       selectedNoteTemplate: 'thanks',
     },
     selectedTemplate: 'modern',
+    accentColor: '#0d9488',
     metadata: {
       id: id + '-sample',
       createdAt: new Date().toISOString(),

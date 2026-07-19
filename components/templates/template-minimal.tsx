@@ -11,6 +11,7 @@ import {
   calculateGrandTotal,
   calculateSubtotal,
   numberToWords,
+  calculateTaxBreakdown,
 } from '@/lib/helpers'
 import { PaymentSummary } from '@/components/invoice/payment-summary'
 
@@ -121,12 +122,12 @@ export function TemplateMinimal({ data }: Props) {
             <span>-{formatCurrency(globalDiscount)}</span>
           </div>
         )}
-        {pricing.taxEnabled && tax > 0 && (
-          <div className="flex justify-between text-gray-500">
-            <span>Pajak</span>
-            <span>{formatCurrency(tax)}</span>
+        {calculateTaxBreakdown(afterDiscount, pricing).map(t => (
+          <div key={t.name} className="flex justify-between text-gray-500">
+            <span>{t.name}</span>
+            <span>{formatCurrency(t.amount)}</span>
           </div>
-        )}
+        ))}
         {additionalFeesTotal > 0 && (
           <div className="flex justify-between text-gray-500">
             <span>Biaya Lain</span>

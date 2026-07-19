@@ -25,6 +25,19 @@ export interface CustomerInfo {
   customerEmail: string
   customerPhone: string
   additionalNotes: string
+  contactId?: string
+}
+
+export interface CustomerContact {
+  id: string
+  name: string
+  company: string
+  address: string
+  email: string
+  phone: string
+  notes: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ServiceItem {
@@ -51,12 +64,17 @@ export interface PaymentMilestone {
   dueDate: string
 }
 
+export interface TaxEntry {
+  id: string
+  name: string
+  type: 'percentage' | 'fixed'
+  value: number
+}
+
 export interface Pricing {
   discountType: 'percentage' | 'fixed'
   discountValue: number
-  taxType: 'percentage' | 'fixed'
-  taxValue: number
-  taxEnabled: boolean
+  taxes: TaxEntry[]
   additionalFees: AdditionalFee[]
   paymentTerm: 'full' | 'dp' | 'milestone'
   dpEnabled: boolean
@@ -97,6 +115,7 @@ export interface InvoiceData {
   paymentInfo: PaymentInfo
   notes: Notes
   selectedTemplate: TemplateType
+  accentColor: string
   metadata: Metadata
 }
 

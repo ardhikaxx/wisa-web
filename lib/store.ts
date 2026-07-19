@@ -5,6 +5,7 @@ import type {
   InvoiceData,
   InvoiceHistoryEntry,
   ServicePreset,
+  CustomerContact,
 } from '@/types/invoice'
 import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData, formatDate, migrateInvoiceData } from './helpers'
 import { DEFAULT_SERVICE_PRESETS } from './constants'
@@ -13,6 +14,7 @@ const STORAGE_KEY_INVOICE = 'misa-invoice-data'
 const STORAGE_KEY_HISTORY = 'misa-invoice-history'
 const STORAGE_KEY_PRESETS = 'misa-service-presets'
 const STORAGE_KEY_ONBOARDING = 'misa-onboarding-done'
+const STORAGE_KEY_CONTACTS = 'misa-contacts'
 
 function loadFromStorage<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback
@@ -37,6 +39,7 @@ interface InvoiceStore {
   data: InvoiceData
   history: InvoiceHistoryEntry[]
   servicePresets: ServicePreset[]
+  contacts: CustomerContact[]
   onboardingDone: boolean
   activeTab: 'edit' | 'preview'
   savedAt: string | null
@@ -56,6 +59,9 @@ interface InvoiceStore {
   addServicePreset: (preset: ServicePreset) => void
   updateServicePreset: (id: string, preset: Partial<ServicePreset>) => void
   deleteServicePreset: (id: string) => void
+  addContact: (contact: CustomerContact) => void
+  updateContact: (id: string, data: Partial<CustomerContact>) => void
+  deleteContact: (id: string) => void
   setOnboardingDone: (done: boolean) => void
   setActiveTab: (tab: 'edit' | 'preview') => void
 }
@@ -67,6 +73,7 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     STORAGE_KEY_PRESETS,
     DEFAULT_SERVICE_PRESETS
   ),
+  contacts: loadFromStorage<CustomerContact[]>(STORAGE_KEY_CONTACTS, []),
   onboardingDone: loadFromStorage<boolean>(STORAGE_KEY_ONBOARDING, false),
   savedAt: null,
   activeTab: 'edit',
@@ -192,6 +199,26 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     const presets = get().servicePresets.filter((p) => p.id !== id)
     set({ servicePresets: presets })
     saveToStorage(STORAGE_KEY_PRESETS, presets)
+  },
+
+  addContact: (contact) => {
+    const contacts = [...get().contacts, contact]
+    set({ contacts })
+    saveToStorage(STORAGE_KEY_CONTACTS, contacts)
+  },
+
+  updateContact: (id, partial) => {
+    const contacts = get().contacts.map((c) =>
+      c.id === id ? { ...c, ...partial, updatedAt: new Date().toISOString() } : c
+    )
+    set({ contacts })
+    saveToStorage(STORAGE_KEY_CONTACTS, contacts)
+  },
+
+  deleteContact: (id) => {
+    const contacts = get().contacts.filter((c) => c.id !== id)
+    set({ contacts })
+    saveToStorage(STORAGE_KEY_CONTACTS, contacts)
   },
 
   loadSampleData: () => {
