@@ -29,12 +29,13 @@ import {
   Save,
   Loader2,
   MoreHorizontal,
+  Beaker,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { generateInvoiceSummary, copyToClipboard } from '@/lib/helpers'
 
 export function InvoiceActions() {
-  const { data, resetData, saveToHistory } = useInvoiceStore()
+  const { data, resetData, saveToHistory, loadSampleData } = useInvoiceStore()
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
 
@@ -177,6 +178,10 @@ export function InvoiceActions() {
             <DropdownMenuItem onClick={handleCopySummary} className="gap-2">
               <Copy className="h-4 w-4" />
               Salin Ringkasan
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => { loadSampleData(); toast.success('Data contoh dimuat') }} className="gap-2">
+              <Beaker className="h-4 w-4" />
+              Muat Contoh Data
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSave} className="gap-2">
