@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useInvoiceStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import {
@@ -30,14 +30,46 @@ import {
   Loader2,
   MoreHorizontal,
   Beaker,
+  Upload,
+  Download as DownloadIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { generateInvoiceSummary, copyToClipboard } from '@/lib/helpers'
 
 export function InvoiceActions() {
-  const { data, resetData, saveToHistory, loadSampleData } = useInvoiceStore()
+  const { data, resetData, saveToHistory, loadSampleData, exportBackup, importBackup } = useInvoiceStore()
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false)
   const [showResetDialog, setShowResetDialog] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleExportBackup = useCallback(() => {
+    const json = exportBackup()
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `misa-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success('Data berhasil diexport')
+  }, [exportBackup])
+
+  const handleImportBackup = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const json = ev.target?.result as string
+        importBackup(json)
+        toast.success('Data berhasil direstore')
+      } catch {
+        toast.error('File backup tidak valid')
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }, [importBackup])
 
   const validateInvoice = useCallback((): boolean => {
     const errors: string[] = []
@@ -189,6 +221,16 @@ export function InvoiceActions() {
               Simpan
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleExportBackup} className="gap-2">
+              <DownloadIcon className="h-4 w-4" />
+              Backup Data
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Restore Data
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => setShowResetDialog(true)}
               className="gap-2 text-destructive"
@@ -200,6 +242,13 @@ export function InvoiceActions() {
         </DropdownMenu>
       </div>
 
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".json"
+        className="hidden"
+        onChange={handleImportBackup}
+      />
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

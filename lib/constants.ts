@@ -81,6 +81,7 @@ export const TEMPLATE_OPTIONS = [
   { value: 'minimal', label: 'Minimal' },
   { value: 'professional', label: 'Profesional' },
   { value: 'creative', label: 'Kreatif' },
+  { value: 'nota', label: 'Nota / Kwitansi' },
 ] as const
 
 export const DEFAULT_SERVICE_PRESETS: ServicePreset[] = [

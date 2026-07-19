@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useInvoiceStore } from '@/lib/store'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -22,6 +22,9 @@ import type { ServiceItem } from '@/types/invoice'
 export function ServiceItemsForm() {
   const { data, updateData } = useInvoiceStore()
   const { items } = data
+  const dragItem = useRef<number | null>(null)
+  const dragOverItem = useRef<number | null>(null)
+  const [dragIdx, setDragIdx] = useState<number | null>(null)
 
   const updateItem = useCallback(
     (id: string, partial: Partial<ServiceItem>) => {
@@ -55,6 +58,34 @@ export function ServiceItemsForm() {
     [items, updateData]
   )
 
+  const moveItem = useCallback(
+    (from: number, to: number) => {
+      const newItems = [...items]
+      const [removed] = newItems.splice(from, 1)
+      newItems.splice(to, 0, removed)
+      updateData({ items: newItems })
+    },
+    [items, updateData]
+  )
+
+  const handleDragStart = (index: number) => {
+    dragItem.current = index
+    setDragIdx(index)
+  }
+
+  const handleDragEnter = (index: number) => {
+    dragOverItem.current = index
+  }
+
+  const handleDragEnd = () => {
+    if (dragItem.current !== null && dragOverItem.current !== null && dragItem.current !== dragOverItem.current) {
+      moveItem(dragItem.current, dragOverItem.current)
+    }
+    dragItem.current = null
+    dragOverItem.current = null
+    setDragIdx(null)
+  }
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -65,11 +96,26 @@ export function ServiceItemsForm() {
       </div>
 
       {items.map((item, index) => (
-        <div key={item.id} className="rounded-lg border p-3">
+        <div
+          key={item.id}
+          draggable
+          onDragStart={() => handleDragStart(index)}
+          onDragEnter={() => handleDragEnter(index)}
+          onDragEnd={handleDragEnd}
+          onDragOver={(e) => e.preventDefault()}
+          className={`rounded-lg border p-3 transition-shadow ${
+            dragIdx === index ? 'opacity-50 ring-2 ring-primary' : ''
+          }`}
+        >
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              Jasa #{index + 1}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <div className="cursor-grab text-muted-foreground hover:text-foreground active:cursor-grabbing" title="Seret untuk urutkan">
+                <GripVertical className="h-4 w-4" />
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">
+                Jasa #{index + 1}
+              </span>
+            </div>
             {items.length > 1 && (
               <Button
                 variant="ghost"

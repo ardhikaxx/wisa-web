@@ -6,7 +6,7 @@ import type {
   InvoiceHistoryEntry,
   ServicePreset,
 } from '@/types/invoice'
-import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData } from './helpers'
+import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData, formatDate } from './helpers'
 import { DEFAULT_SERVICE_PRESETS } from './constants'
 
 const STORAGE_KEY_INVOICE = 'misa-invoice-data'
@@ -39,6 +39,7 @@ interface InvoiceStore {
   servicePresets: ServicePreset[]
   onboardingDone: boolean
   activeTab: 'edit' | 'preview'
+  savedAt: string | null
 
   setData: (data: InvoiceData) => void
   updateData: (partial: Partial<InvoiceData>) => void
@@ -49,6 +50,9 @@ interface InvoiceStore {
   duplicateFromHistory: (id: string) => void
   deleteHistoryEntry: (id: string) => void
   clearHistory: () => void
+  markAsPaid: (id: string) => void
+  exportBackup: () => string
+  importBackup: (json: string) => void
   addServicePreset: (preset: ServicePreset) => void
   updateServicePreset: (id: string, preset: Partial<ServicePreset>) => void
   deleteServicePreset: (id: string) => void
@@ -64,25 +68,28 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     DEFAULT_SERVICE_PRESETS
   ),
   onboardingDone: loadFromStorage<boolean>(STORAGE_KEY_ONBOARDING, false),
+  savedAt: null,
   activeTab: 'edit',
 
   setData: (data) => {
+    const now = new Date().toISOString()
     const updated = {
       ...data,
-      metadata: { ...data.metadata, updatedAt: new Date().toISOString() },
+      metadata: { ...data.metadata, updatedAt: now },
     }
-    set({ data: updated })
+    set({ data: updated, savedAt: now })
     saveToStorage(STORAGE_KEY_INVOICE, updated)
   },
 
   updateData: (partial) => {
     const current = get().data
+    const now = new Date().toISOString()
     const updated = {
       ...current,
       ...partial,
-      metadata: { ...current.metadata, updatedAt: new Date().toISOString() },
+      metadata: { ...current.metadata, updatedAt: now },
     }
-    set({ data: updated })
+    set({ data: updated, savedAt: now })
     saveToStorage(STORAGE_KEY_INVOICE, updated)
   },
 
@@ -191,6 +198,31 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     const sample = getSampleInvoiceData()
     set({ data: sample })
     saveToStorage(STORAGE_KEY_INVOICE, sample)
+  },
+
+  markAsPaid: (id: string) => {
+    const { history } = get()
+    const newHistory = history.map((h) =>
+      h.id === id
+        ? { ...h, status: 'paid' as const, data: { ...h.data, invoiceInfo: { ...h.data.invoiceInfo, paymentStatus: 'paid' as const } } }
+        : h
+    )
+    set({ history: newHistory })
+    saveToStorage(STORAGE_KEY_HISTORY, newHistory)
+  },
+
+  exportBackup: (): string => {
+    const { history, servicePresets } = get()
+    const backup = { history, servicePresets, exportedAt: new Date().toISOString() }
+    return JSON.stringify(backup, null, 2)
+  },
+
+  importBackup: (json: string) => {
+    const backup = JSON.parse(json)
+    if (!backup.history || !backup.servicePresets) throw new Error('Format backup tidak valid')
+    set({ history: backup.history, servicePresets: backup.servicePresets })
+    saveToStorage(STORAGE_KEY_HISTORY, backup.history)
+    saveToStorage(STORAGE_KEY_PRESETS, backup.servicePresets)
   },
 
   setOnboardingDone: (done) => {

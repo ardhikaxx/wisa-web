@@ -10,10 +10,10 @@ import { InvoiceActions } from '@/components/invoice/invoice-actions'
 import { InvoiceHistory } from '@/components/invoice/invoice-history'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { FileText, Eye, History } from 'lucide-react'
+import { FileText, Eye, History, Cloud } from 'lucide-react'
 
 export default function InvoicePage() {
-  const { activeTab, setActiveTab } = useInvoiceStore()
+  const { activeTab, setActiveTab, savedAt } = useInvoiceStore()
   const [showHistory, setShowHistory] = useState(false)
   const [hydrated, setHydrated] = useState(false)
 
@@ -62,6 +62,10 @@ export default function InvoicePage() {
             <History className="h-4 w-4" />
             Riwayat
           </Button>
+          <div className="hidden items-center gap-1.5 text-[10px] text-muted-foreground lg:flex">
+            <Cloud className="h-3 w-3" />
+            {savedAt ? `Tersimpan ${new Date(savedAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}` : 'Belum disimpan'}
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <InvoiceActions />

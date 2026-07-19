@@ -82,6 +82,21 @@ export function calculateGrandTotal(data: InvoiceData): number {
   return Math.max(0, afterDiscount + tax + additionalFees)
 }
 
+export function calculateDpAmount(data: InvoiceData): number {
+  if (!data.pricing.dpEnabled || !data.pricing.dpValue) return 0
+  const total = calculateGrandTotal(data)
+  if (data.pricing.dpType === 'percentage') {
+    return (total * data.pricing.dpValue) / 100
+  }
+  return Math.min(data.pricing.dpValue, total)
+}
+
+export function calculateRemainingBalance(data: InvoiceData): number {
+  const total = calculateGrandTotal(data)
+  const dp = calculateDpAmount(data)
+  return Math.max(0, total - dp)
+}
+
 export function generateInvoiceNumber(): string {
   const now = new Date()
   const year = now.getFullYear()
@@ -141,6 +156,11 @@ export function getDefaultInvoiceData(
       taxValue: 11,
       taxEnabled: false,
       additionalFees: [],
+      paymentTerm: 'full',
+      dpEnabled: false,
+      dpType: 'percentage',
+      dpValue: 0,
+      milestones: [],
     },
     paymentInfo: {
       paymentMethod: 'transfer',
@@ -351,6 +371,14 @@ export function getSampleInvoiceData(): InvoiceData {
       taxEnabled: true,
       additionalFees: [
         { id: 'fee1', name: 'Biaya Domain & Hosting', amount: 350000 },
+      ],
+      paymentTerm: 'dp',
+      dpEnabled: true,
+      dpType: 'percentage',
+      dpValue: 50,
+      milestones: [
+        { id: 'm1', name: 'Pembayaran Pertama (DP)', percentage: 50, dueDate: now },
+        { id: 'm2', name: 'Pelunasan', percentage: 50, dueDate: later },
       ],
     },
     paymentInfo: {

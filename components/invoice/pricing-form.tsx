@@ -22,9 +22,11 @@ import {
   calculateTaxableAmount,
   calculateAdditionalFeesTotal,
   calculateGrandTotal,
+  calculateDpAmount,
+  calculateRemainingBalance,
   formatCurrency,
 } from '@/lib/helpers'
-import type { AdditionalFee } from '@/types/invoice'
+import type { AdditionalFee, PaymentMilestone } from '@/types/invoice'
 
 export function PricingForm() {
   const { data, updateData } = useInvoiceStore()
@@ -60,6 +62,35 @@ export function PricingForm() {
     (id: string) => {
       const fees = (pricing.additionalFees || []).filter((f) => f.id !== id)
       updatePricing({ additionalFees: fees })
+    },
+    [pricing, updateData]
+  )
+
+  const addMilestone = useCallback(() => {
+    const next = ((pricing.milestones || []).length + 1)
+    const milestone: PaymentMilestone = {
+      id: Date.now().toString(),
+      name: `Termin ${next}`,
+      percentage: next === 1 ? 100 : 0,
+      dueDate: new Date().toISOString().slice(0, 10),
+    }
+    updatePricing({ milestones: [...(pricing.milestones || []), milestone] })
+  }, [pricing, updateData])
+
+  const updateMilestone = useCallback(
+    (id: string, partial: Partial<PaymentMilestone>) => {
+      const list = (pricing.milestones || []).map((m) =>
+        m.id === id ? { ...m, ...partial } : m
+      )
+      updatePricing({ milestones: list })
+    },
+    [pricing, updateData]
+  )
+
+  const removeMilestone = useCallback(
+    (id: string) => {
+      const list = (pricing.milestones || []).filter((m) => m.id !== id)
+      updatePricing({ milestones: list })
     },
     [pricing, updateData]
   )
@@ -190,6 +221,122 @@ export function PricingForm() {
             </div>
           ))}
         </div>
+      </div>
+
+      <Separator />
+
+      <div className="rounded-lg border p-3">
+        <span className="mb-2 block text-sm font-medium">Ketentuan Pembayaran</span>
+        <Select
+          value={pricing.paymentTerm}
+          onValueChange={(v) => v && updatePricing({ paymentTerm: v as any, dpEnabled: v === 'dp', milestones: v === 'milestone' ? pricing.milestones : [] })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="full">Pembayaran Penuh</SelectItem>
+            <SelectItem value="dp">Uang Muka (DP)</SelectItem>
+            <SelectItem value="milestone">Termin / Cicilan</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {pricing.paymentTerm === 'dp' && (
+          <div className="mt-3 space-y-2">
+            <div className="flex items-end gap-2">
+              <div className="flex-1">
+                <Label className="text-[10px] text-muted-foreground">Nilai DP</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={pricing.dpType === 'percentage' ? 100 : undefined}
+                  value={pricing.dpValue || ''}
+                  onChange={(e) =>
+                    updatePricing({ dpValue: Math.max(0, Number(e.target.value)) })
+                  }
+                />
+              </div>
+              <div className="w-20">
+                <Label className="text-[10px] text-muted-foreground">Tipe</Label>
+                <Select
+                  value={pricing.dpType}
+                  onValueChange={(v) => v && updatePricing({ dpType: v as any })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">Persen</SelectItem>
+                    <SelectItem value="fixed">Nominal</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {pricing.dpValue > 0 && (
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p>DP: {formatCurrency(calculateDpAmount(data))}</p>
+                <p>Sisa: {formatCurrency(calculateRemainingBalance(data))}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {pricing.paymentTerm === 'milestone' && (
+          <div className="mt-3 space-y-2">
+            {(pricing.milestones || []).length === 0 && (
+              <p className="text-xs text-muted-foreground">Belum ada termin</p>
+            )}
+            {(pricing.milestones || []).map((m, i) => (
+              <div key={m.id} className="rounded-md border p-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium">{m.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 text-destructive"
+                    onClick={() => removeMilestone(m.id)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="mt-1 flex items-center gap-2">
+                  <div className="flex-1">
+                    <Input
+                      placeholder={`Termin ${i + 1}`}
+                      className="h-7 text-xs"
+                      value={m.name}
+                      onChange={(e) => updateMilestone(m.id, { name: e.target.value })}
+                    />
+                  </div>
+                  <div className="w-16">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      placeholder="%"
+                      className="h-7 text-xs"
+                      value={m.percentage || ''}
+                      onChange={(e) =>
+                        updateMilestone(m.id, { percentage: Math.max(0, Math.min(100, Number(e.target.value))) })
+                      }
+                    />
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">%</span>
+                  <Input
+                    type="date"
+                    className="h-7 w-32 text-xs"
+                    value={m.dueDate}
+                    onChange={(e) => updateMilestone(m.id, { dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full text-xs" onClick={addMilestone}>
+              <Plus className="mr-1 h-3 w-3" />
+              Tambah Termin
+            </Button>
+          </div>
+        )}
       </div>
 
       <Separator />

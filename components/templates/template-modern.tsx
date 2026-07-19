@@ -14,6 +14,7 @@ import {
 } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
+import { PaymentSummary } from '@/components/invoice/payment-summary'
 
 interface Props {
   data: InvoiceData
@@ -197,6 +198,9 @@ export function TemplateModern({ data }: Props) {
           </p>
         )}
       </div>
+
+      {/* Payment Term Summary */}
+      <PaymentSummary data={data} />
 
       {/* Payment Info */}
       {paymentInfo.paymentMethod && (

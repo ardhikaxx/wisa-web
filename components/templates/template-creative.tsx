@@ -12,6 +12,7 @@ import {
   calculateSubtotal,
   numberToWords,
 } from '@/lib/helpers'
+import { PaymentSummary } from '@/components/invoice/payment-summary'
 
 interface Props {
   data: InvoiceData
@@ -179,6 +180,8 @@ export function TemplateCreative({ data }: Props) {
             </p>
           )}
         </div>
+
+        <PaymentSummary data={data} />
 
         {/* Payment */}
         {paymentInfo.paymentMethod && (

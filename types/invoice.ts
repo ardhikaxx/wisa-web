@@ -44,6 +44,13 @@ export interface AdditionalFee {
   amount: number
 }
 
+export interface PaymentMilestone {
+  id: string
+  name: string
+  percentage: number
+  dueDate: string
+}
+
 export interface Pricing {
   discountType: 'percentage' | 'fixed'
   discountValue: number
@@ -51,6 +58,11 @@ export interface Pricing {
   taxValue: number
   taxEnabled: boolean
   additionalFees: AdditionalFee[]
+  paymentTerm: 'full' | 'dp' | 'milestone'
+  dpEnabled: boolean
+  dpType: 'percentage' | 'fixed'
+  dpValue: number
+  milestones: PaymentMilestone[]
 }
 
 export interface PaymentInfo {
@@ -68,7 +80,7 @@ export interface Notes {
   selectedNoteTemplate: string
 }
 
-export type TemplateType = 'modern' | 'minimal' | 'professional' | 'creative'
+export type TemplateType = 'modern' | 'minimal' | 'professional' | 'creative' | 'nota'
 
 export interface Metadata {
   createdAt: string

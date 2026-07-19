@@ -32,6 +32,7 @@ import {
   AlertTriangle,
   Inbox,
   ExternalLink,
+  CheckCircle2,
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
@@ -44,7 +45,7 @@ interface Props {
 }
 
 export function InvoiceHistory({ open, onOpenChange }: Props) {
-  const { history, loadFromHistory, duplicateFromHistory, deleteHistoryEntry, clearHistory } =
+  const { history, loadFromHistory, duplicateFromHistory, deleteHistoryEntry, clearHistory, markAsPaid } =
     useInvoiceStore()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showClearDialog, setShowClearDialog] = useState(false)
@@ -153,6 +154,20 @@ export function InvoiceHistory({ open, onOpenChange }: Props) {
                           </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
+                          {entry.status !== 'paid' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-green-600"
+                              onClick={() => {
+                                markAsPaid(entry.id)
+                                toast.success('Invoice ditandai Lunas')
+                              }}
+                              title="Tandai Lunas"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"

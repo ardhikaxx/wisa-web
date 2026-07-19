@@ -5,6 +5,7 @@ import { TemplateModern } from '@/components/templates/template-modern'
 import { TemplateMinimal } from '@/components/templates/template-minimal'
 import { TemplateProfessional } from '@/components/templates/template-professional'
 import { TemplateCreative } from '@/components/templates/template-creative'
+import { TemplateNota } from '@/components/templates/template-nota'
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ const templates = {
   minimal: TemplateMinimal,
   professional: TemplateProfessional,
   creative: TemplateCreative,
+  nota: TemplateNota,
 }
 
 export function InvoicePreview() {
