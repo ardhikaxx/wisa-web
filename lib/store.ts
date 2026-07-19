@@ -6,7 +6,7 @@ import type {
   InvoiceHistoryEntry,
   ServicePreset,
 } from '@/types/invoice'
-import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData, formatDate } from './helpers'
+import { getDefaultInvoiceData, generateInvoiceNumber, calculateGrandTotal, getSampleInvoiceData, formatDate, migrateInvoiceData } from './helpers'
 import { DEFAULT_SERVICE_PRESETS } from './constants'
 
 const STORAGE_KEY_INVOICE = 'misa-invoice-data'
@@ -61,7 +61,7 @@ interface InvoiceStore {
 }
 
 export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
-  data: loadFromStorage<InvoiceData>(STORAGE_KEY_INVOICE, getDefaultInvoiceData()),
+  data: migrateInvoiceData(loadFromStorage<Partial<InvoiceData>>(STORAGE_KEY_INVOICE, getDefaultInvoiceData())),
   history: loadFromStorage<InvoiceHistoryEntry[]>(STORAGE_KEY_HISTORY, []),
   servicePresets: loadFromStorage<ServicePreset[]>(
     STORAGE_KEY_PRESETS,
@@ -127,13 +127,13 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     const { history } = get()
     const entry = history.find((h) => h.id === id)
     if (entry) {
-      const restored = {
+      const restored = migrateInvoiceData({
         ...entry.data,
         metadata: {
           ...entry.data.metadata,
           updatedAt: new Date().toISOString(),
         },
-      }
+      })
       set({ data: restored })
       saveToStorage(STORAGE_KEY_INVOICE, restored)
     }
@@ -143,7 +143,7 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
     const { history } = get()
     const entry = history.find((h) => h.id === id)
     if (entry) {
-      const duplicated = {
+      const duplicated = migrateInvoiceData({
         ...entry.data,
         invoiceInfo: {
           ...entry.data.invoiceInfo,
@@ -157,7 +157,7 @@ export const useInvoiceStore = create<InvoiceStore>((set, get) => ({
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         },
-      }
+      })
       set({ data: duplicated })
       saveToStorage(STORAGE_KEY_INVOICE, duplicated)
     }

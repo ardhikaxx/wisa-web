@@ -105,6 +105,45 @@ export function generateInvoiceNumber(): string {
   return `INV-${year}${month}-${random}`
 }
 
+export function migrateInvoiceData(data: Partial<InvoiceData>): InvoiceData {
+  const defaults = getDefaultInvoiceData()
+  return {
+    ...defaults,
+    ...data,
+    pricing: {
+      ...defaults.pricing,
+      ...(data.pricing || {}),
+      additionalFees: data.pricing?.additionalFees || defaults.pricing.additionalFees,
+      milestones: data.pricing?.milestones || defaults.pricing.milestones,
+    },
+    paymentInfo: {
+      ...defaults.paymentInfo,
+      ...(data.paymentInfo || {}),
+    },
+    notes: {
+      ...defaults.notes,
+      ...(data.notes || {}),
+    },
+    metadata: {
+      ...defaults.metadata,
+      ...(data.metadata || {}),
+    },
+    items: data.items || defaults.items,
+    invoiceInfo: {
+      ...defaults.invoiceInfo,
+      ...(data.invoiceInfo || {}),
+    },
+    customerInfo: {
+      ...defaults.customerInfo,
+      ...(data.customerInfo || {}),
+    },
+    businessInfo: {
+      ...defaults.businessInfo,
+      ...(data.businessInfo || {}),
+    },
+  }
+}
+
 export function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   try {
