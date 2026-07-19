@@ -15,9 +15,18 @@ interface Props {
 
 export function PaymentSummary({ data }: Props) {
   const { pricing } = data
-  if (pricing.paymentTerm === 'full') return null
-
   const grandTotal = calculateGrandTotal(data)
+
+  if (pricing.paymentTerm === 'full') {
+    return (
+      <div className="mb-6 rounded-lg border border-dashed border-primary/30 bg-primary/5 p-3">
+        <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Ketentuan Pembayaran
+        </h4>
+        <p className="text-sm">Pembayaran Penuh — {formatCurrency(grandTotal)}</p>
+      </div>
+    )
+  }
 
   if (pricing.paymentTerm === 'dp') {
     const dpAmount = calculateDpAmount(data)

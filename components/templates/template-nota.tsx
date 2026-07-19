@@ -14,6 +14,7 @@ import {
 } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
+import { PaymentSummary } from '@/components/invoice/payment-summary'
 
 interface Props {
   data: InvoiceData
@@ -143,6 +144,8 @@ export function TemplateNota({ data }: Props) {
           </p>
         )}
       </div>
+
+      <PaymentSummary data={data} />
 
       {/* Payment info */}
       {paymentInfo.paymentMethod && (
