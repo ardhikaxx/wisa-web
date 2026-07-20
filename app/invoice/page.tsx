@@ -85,6 +85,7 @@ export default function InvoicePage() {
           </div>
         </div>
         <div
+          id="invoice-preview-panel"
           className={`bg-muted/30 lg:w-1/2 xl:w-[55%] ${
             activeTab === 'edit' ? 'hidden lg:block' : 'block'
           }`}
