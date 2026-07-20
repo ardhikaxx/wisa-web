@@ -15,7 +15,7 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
-              M
+              W
             </div>
             <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
           </Link>
