@@ -146,12 +146,19 @@ export function InvoiceActions() {
     style.id = 'print-58mm-style'
     style.textContent = `@page { size: 58mm auto; margin: 0; } #invoice-preview { width: 58mm; max-width: 58mm; } #invoice-preview * { font-size: 7px !important; } #invoice-preview table { font-size: 6px !important; }`
     document.head.appendChild(style)
-    document.body.classList.add('print-58mm')
     window.print()
-    setTimeout(() => {
-      document.body.classList.remove('print-58mm')
-      document.getElementById('print-58mm-style')?.remove()
-    }, 500)
+    setTimeout(() => { document.getElementById('print-58mm-style')?.remove() }, 500)
+  }, [validateInvoice, saveToHistory])
+
+  const handlePrint80mm = useCallback(() => {
+    if (!validateInvoice()) return
+    saveToHistory()
+    const style = document.createElement('style')
+    style.id = 'print-80mm-style'
+    style.textContent = `@page { size: 80mm auto; margin: 0; } #invoice-preview { width: 80mm; max-width: 80mm; } #invoice-preview * { font-size: 8px !important; }`
+    document.head.appendChild(style)
+    window.print()
+    setTimeout(() => { document.getElementById('print-80mm-style')?.remove() }, 500)
   }, [validateInvoice, saveToHistory])
 
   const handleShare = useCallback(async () => {
@@ -221,6 +228,10 @@ export function InvoiceActions() {
             <DropdownMenuItem onClick={handlePrint58mm} className="gap-2">
               <Printer className="h-4 w-4" />
               Cetak Nota (58mm)
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handlePrint80mm} className="gap-2">
+              <Printer className="h-4 w-4" />
+              Cetak Nota (80mm)
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleShare} className="gap-2">
               <Share2 className="h-4 w-4" />
