@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useInvoiceStore } from '@/lib/store'
 import {
   Sheet,
@@ -33,6 +33,7 @@ import {
   Inbox,
   ExternalLink,
   CheckCircle2,
+  Search,
 } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/helpers'
 import { STATUS_COLORS } from '@/lib/constants'
@@ -49,6 +50,17 @@ export function InvoiceHistory({ open, onOpenChange }: Props) {
     useInvoiceStore()
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [showClearDialog, setShowClearDialog] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filteredHistory = useMemo(() => {
+    if (!searchQuery.trim()) return history
+    const q = searchQuery.toLowerCase()
+    return history.filter(
+      (h) =>
+        h.invoiceNumber.toLowerCase().includes(q) ||
+        h.customerName.toLowerCase().includes(q)
+    )
+  }, [history, searchQuery])
 
   const handleLoad = (id: string) => {
     loadFromHistory(id)
@@ -101,24 +113,36 @@ export function InvoiceHistory({ open, onOpenChange }: Props) {
             </div>
           ) : (
             <>
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {history.length} invoice tersimpan
-                </p>
+              <div className="mt-4 flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    className="h-8 w-full rounded-md border bg-transparent pl-7 pr-2 text-xs outline-none focus:border-primary"
+                    placeholder="Cari no. invoice atau pelanggan..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 gap-1 text-xs text-destructive"
+                  className="h-7 shrink-0 gap-1 text-xs text-destructive"
                   onClick={() => setShowClearDialog(true)}
                 >
                   <TrashIcon className="h-3 w-3" />
-                  Hapus Semua
+                  Hapus
                 </Button>
               </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {filteredHistory.length}/{history.length} invoice
+              </p>
               <Separator className="my-2" />
-              <ScrollArea className="h-[calc(100vh-250px)]">
+              <ScrollArea className="h-[calc(100vh-280px)]">
                 <div className="space-y-2">
-                  {history.map((entry) => (
+                  {filteredHistory.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Tidak ditemukan</p>
+                  ) : (
+                  filteredHistory.map((entry) => (
                     <div
                       key={entry.id}
                       className="group rounded-lg border p-3 transition-colors hover:bg-muted/50"
@@ -198,7 +222,7 @@ export function InvoiceHistory({ open, onOpenChange }: Props) {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )))}
                 </div>
               </ScrollArea>
               <div className="mt-4 rounded-lg bg-muted/50 p-3 text-center text-[10px] text-muted-foreground">

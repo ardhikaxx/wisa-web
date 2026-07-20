@@ -181,6 +181,9 @@ export function TemplateModern({ data }: Props) {
             <span>{formatCurrency(t.amount)}</span>
           </div>
         ))}
+        {pricing.taxIncluded && (
+          <p className="text-[10px] italic text-muted-foreground">*sudah termasuk pajak</p>
+        )}
         {additionalFeesTotal > 0 && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Biaya Lain</span>

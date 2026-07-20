@@ -31,7 +31,7 @@ import {
   MoreHorizontal,
   Beaker,
   Upload,
-  Download as DownloadIcon,
+  ImageDown,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { generateInvoiceSummary, copyToClipboard } from '@/lib/helpers'
@@ -132,6 +132,32 @@ export function InvoiceActions() {
       setIsGeneratingPdf(false)
     }
   }, [validateInvoice, data, saveToHistory])
+
+  const [isGeneratingPng, setIsGeneratingPng] = useState(false)
+
+  const handleExportPng = useCallback(async () => {
+    if (!validateInvoice()) return
+    setIsGeneratingPng(true)
+    try {
+      const sourceEl = document.getElementById('invoice-preview')
+      if (!sourceEl) throw new Error('Preview tidak ditemukan')
+      const domtoimage = (await import('dom-to-image-more')).default
+      const canvas = await domtoimage.toCanvas(sourceEl, {
+        pixelRatio: 3,
+        quality: 1,
+        bgcolor: '#ffffff',
+      })
+      const link = document.createElement('a')
+      link.download = `${data.invoiceInfo.invoiceNumber || 'invoice'}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+      toast.success('PNG berhasil diunduh!')
+    } catch {
+      toast.error('Gagal membuat PNG')
+    } finally {
+      setIsGeneratingPng(false)
+    }
+  }, [validateInvoice, data])
 
   const handlePrint = useCallback(() => {
     if (!validateInvoice()) return
@@ -244,6 +270,11 @@ export function InvoiceActions() {
               <Printer className="h-4 w-4" />
               Cetak Nota (80mm)
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleExportPng} className="gap-2" disabled={isGeneratingPng}>
+              {isGeneratingPng ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageDown className="h-4 w-4" />}
+              {isGeneratingPng ? 'Memproses...' : 'Export PNG'}
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={handleShare} className="gap-2">
               <Share2 className="h-4 w-4" />
               Bagikan
@@ -264,7 +295,7 @@ export function InvoiceActions() {
             <DropdownMenuSeparator />
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleExportBackup} className="gap-2">
-              <DownloadIcon className="h-4 w-4" />
+              <Download className="h-4 w-4" />
               Backup Data
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="gap-2">

@@ -226,6 +226,18 @@ export function PricingForm() {
               </Button>
             </div>
           ))}
+          <div className="flex items-center justify-between border-t pt-2">
+            <span className="text-xs text-muted-foreground">Harga sudah termasuk pajak</span>
+            <Switch
+              checked={pricing.taxIncluded}
+              onCheckedChange={(v) => updatePricing({ taxIncluded: v })}
+            />
+          </div>
+          {pricing.taxIncluded && (
+            <p className="text-[10px] text-muted-foreground">
+              Pajak dihitung dari dalam total harga (PPN termasuk)
+            </p>
+          )}
         </div>
       </div>
 

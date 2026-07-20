@@ -128,6 +128,9 @@ export function TemplateMinimal({ data }: Props) {
             <span>{formatCurrency(t.amount)}</span>
           </div>
         ))}
+        {pricing.taxIncluded && (
+          <p className="text-[10px] italic text-gray-400">*sudah termasuk pajak</p>
+        )}
         {additionalFeesTotal > 0 && (
           <div className="flex justify-between text-gray-500">
             <span>Biaya Lain</span>

@@ -61,6 +61,13 @@ export function calculateGlobalDiscount(subtotal: number, pricing: Pricing): num
 }
 
 export function calculateTaxableAmount(amount: number, pricing: Pricing): number {
+  if (pricing.taxIncluded) {
+    return (pricing.taxes || []).reduce((sum, tax) => {
+      if (!tax.value || tax.value <= 0) return sum
+      if (tax.type === 'percentage') return sum + (amount * tax.value) / (100 + tax.value)
+      return sum + Math.min(tax.value, amount)
+    }, 0)
+  }
   return (pricing.taxes || []).reduce((sum, tax) => {
     if (!tax.value || tax.value <= 0) return sum
     if (tax.type === 'percentage') return sum + (amount * tax.value) / 100
@@ -68,7 +75,17 @@ export function calculateTaxableAmount(amount: number, pricing: Pricing): number
   }, 0)
 }
 
-export function calculateTaxBreakdown(amount: number, pricing: Pricing): { name: string; amount: number }[] {
+export function calculateTaxBreakdown(amount: number, pricing: Pricing): { name: string; amount: number; base?: number }[] {
+  if (pricing.taxIncluded) {
+    return (pricing.taxes || []).map((tax) => {
+      if (!tax.value || tax.value <= 0) return { name: tax.name, amount: 0 }
+      if (tax.type === 'percentage') {
+        const taxAmount = (amount * tax.value) / (100 + tax.value)
+        return { name: tax.name, amount: taxAmount, base: amount - taxAmount }
+      }
+      return { name: tax.name, amount: Math.min(tax.value, amount) }
+    }).filter(t => t.amount > 0)
+  }
   return (pricing.taxes || []).map((tax) => {
     if (!tax.value || tax.value <= 0) return { name: tax.name, amount: 0 }
     if (tax.type === 'percentage') return { name: tax.name, amount: (amount * tax.value) / 100 }
@@ -122,6 +139,7 @@ export function migrateInvoiceData(data: Partial<InvoiceData>): InvoiceData {
     pricing: {
       ...defaults.pricing,
       ...oldPricing,
+      taxIncluded: oldPricing.taxIncluded ?? defaults.pricing.taxIncluded,
       taxes: oldPricing.taxes || (
         oldPricing.taxEnabled && oldPricing.taxValue
           ? [{ id: 'tax-1', name: oldPricing.taxType === 'percentage' ? `PPN ${oldPricing.taxValue}%` : 'Pajak', type: oldPricing.taxType || 'percentage', value: oldPricing.taxValue }]
@@ -207,6 +225,7 @@ export function getDefaultInvoiceData(
       discountType: 'percentage',
       discountValue: 0,
       taxes: [],
+      taxIncluded: false,
       additionalFees: [],
       paymentTerm: 'full',
       dpEnabled: false,
@@ -419,6 +438,7 @@ export function getSampleInvoiceData(): InvoiceData {
     pricing: {
       discountType: 'percentage',
       discountValue: 0,
+      taxIncluded: false,
       taxes: [
         { id: 'tax-ppn', name: 'PPN 11%', type: 'percentage', value: 11 },
         { id: 'tax-pph', name: 'PPh 23', type: 'percentage', value: 2 },

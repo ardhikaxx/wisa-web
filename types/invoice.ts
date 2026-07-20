@@ -75,6 +75,7 @@ export interface Pricing {
   discountType: 'percentage' | 'fixed'
   discountValue: number
   taxes: TaxEntry[]
+  taxIncluded: boolean
   additionalFees: AdditionalFee[]
   paymentTerm: 'full' | 'dp' | 'milestone'
   dpEnabled: boolean
