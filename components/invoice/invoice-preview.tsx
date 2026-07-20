@@ -32,7 +32,7 @@ export function InvoicePreview() {
 
   return (
     <div className="w-full max-w-[210mm]">
-        <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-2 print-hide">
         <div className="flex items-center gap-2">
           <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">Template</span>

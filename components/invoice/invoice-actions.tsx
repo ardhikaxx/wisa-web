@@ -139,27 +139,38 @@ export function InvoiceActions() {
     window.print()
   }, [validateInvoice, saveToHistory])
 
+  const injectPrintStyle = useCallback((widthMm: number, fontSize: string) => {
+    const existing = document.getElementById(`print-${widthMm}mm-style`)
+    if (existing) existing.remove()
+    const style = document.createElement('style')
+    style.id = `print-${widthMm}mm-style`
+    style.textContent = `
+      @media print {
+        @page { size: ${widthMm}mm auto; margin: 0; }
+        #invoice-preview { width: ${widthMm}mm !important; max-width: ${widthMm}mm !important; }
+        #invoice-preview * { font-size: ${fontSize} !important; }
+        #invoice-preview table { font-size: ${parseInt(fontSize) - 1}px !important; }
+      }
+    `
+    document.head.appendChild(style)
+    return style
+  }, [])
+
   const handlePrint58mm = useCallback(() => {
     if (!validateInvoice()) return
     saveToHistory()
-    const style = document.createElement('style')
-    style.id = 'print-58mm-style'
-    style.textContent = `@page { size: 58mm auto; margin: 0; } #invoice-preview { width: 58mm; max-width: 58mm; } #invoice-preview * { font-size: 7px !important; } #invoice-preview table { font-size: 6px !important; }`
-    document.head.appendChild(style)
-    window.print()
-    setTimeout(() => { document.getElementById('print-58mm-style')?.remove() }, 500)
-  }, [validateInvoice, saveToHistory])
+    injectPrintStyle(58, '7px')
+    setTimeout(() => window.print(), 50)
+    setTimeout(() => { document.getElementById('print-58mm-style')?.remove() }, 1000)
+  }, [validateInvoice, saveToHistory, injectPrintStyle])
 
   const handlePrint80mm = useCallback(() => {
     if (!validateInvoice()) return
     saveToHistory()
-    const style = document.createElement('style')
-    style.id = 'print-80mm-style'
-    style.textContent = `@page { size: 80mm auto; margin: 0; } #invoice-preview { width: 80mm; max-width: 80mm; } #invoice-preview * { font-size: 8px !important; }`
-    document.head.appendChild(style)
-    window.print()
-    setTimeout(() => { document.getElementById('print-80mm-style')?.remove() }, 500)
-  }, [validateInvoice, saveToHistory])
+    injectPrintStyle(80, '8px')
+    setTimeout(() => window.print(), 50)
+    setTimeout(() => { document.getElementById('print-80mm-style')?.remove() }, 1000)
+  }, [validateInvoice, saveToHistory, injectPrintStyle])
 
   const handleShare = useCallback(async () => {
     if (!validateInvoice()) return
