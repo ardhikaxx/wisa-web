@@ -74,7 +74,7 @@ export default function InvoicePage() {
 
       <div className="flex flex-1 flex-col lg:flex-row">
         <div
-          className={`border-r lg:w-1/2 xl:w-[45%] ${
+          className={`no-print border-r lg:w-1/2 xl:w-[45%] ${
             activeTab === 'preview' ? 'hidden lg:block' : 'block'
           }`}
         >
