@@ -48,7 +48,7 @@ export function InvoiceActions() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `misa-backup-${new Date().toISOString().slice(0, 10)}.json`
+    a.download = `wisa-backup-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
     URL.revokeObjectURL(url)
     toast.success('Data berhasil diexport')

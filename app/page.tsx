@@ -96,7 +96,7 @@ export default function HomePage() {
               Siap Membuat Invoice?
             </h2>
             <p className="mt-3 text-muted-foreground">
-              Ribuan pelaku UMKM jasa sudah menggunakan MISA. Mulai sekarang,
+              Ribuan pelaku UMKM jasa sudah menggunakan WISA. Mulai sekarang,
               gratis.
             </p>
             <Link
@@ -110,7 +110,7 @@ export default function HomePage() {
         </section>
       </main>
       <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        <p>&copy; 2026 MISA. Dibuat untuk UMKM jasa Indonesia.</p>
+        <p>&copy; 2026 WISA — Website Invoice & Service Application. Dibuat untuk UMKM jasa Indonesia.</p>
       </footer>
     </>
   )

@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "MISA — Generator Invoice Jasa Gratis Tanpa Login",
+  title: "WISA — Website Invoice & Service Application",
   description:
     "Buat invoice profesional untuk bisnis jasa UMKM secara gratis. Preview real-time, download PDF, tanpa perlu login atau daftar akun.",
   openGraph: {
-    title: "MISA — Generator Invoice Jasa Gratis Tanpa Login",
+    title: "WISA — Website Invoice & Service Application",
     description:
       "Buat invoice profesional untuk bisnis jasa UMKM secara gratis. Preview real-time, download PDF, tanpa perlu login.",
     type: "website",

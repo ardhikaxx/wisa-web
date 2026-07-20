@@ -34,7 +34,7 @@ export function OnboardingDialog() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Sparkles className="h-5 w-5 text-primary" />
-            Selamat Datang di MISA!
+            Selamat Datang di WISA!
           </DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">
             Buat invoice profesional untuk bisnis jasa Anda dalam hitungan menit,

@@ -1,6 +1,6 @@
 import type { NoteTemplate, ServicePreset } from '@/types/invoice'
 
-export const APP_NAME = 'MISA'
+export const APP_NAME = 'WISA'
 export const APP_TAGLINE = 'Buat Invoice Jasa Profesional dalam Hitungan Menit'
 export const APP_DESCRIPTION =
   'Generator invoice gratis untuk UMKM bidang jasa. Buat invoice profesional, preview real-time, download PDF, tanpa login.'
