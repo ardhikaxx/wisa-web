@@ -16,6 +16,7 @@ import {
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
 import { PaymentSummary } from '@/components/invoice/payment-summary'
+import { InvoiceQr } from '@/components/invoice/invoice-qr'
 
 interface Props {
   data: InvoiceData
@@ -159,6 +160,10 @@ export function TemplateNota({ data }: Props) {
           {paymentInfo.bankName && <p>{paymentInfo.bankName}</p>}
           {paymentInfo.accountName && <p>a.n. {paymentInfo.accountName}</p>}
           {paymentInfo.accountNumber && <p>No.Rek: {paymentInfo.accountNumber}</p>}
+          <div className="mt-2 flex items-center gap-2">
+            <InvoiceQr value={invoiceInfo.invoiceNumber} size={40} />
+            <span className="text-[8px] text-muted-foreground">{invoiceInfo.invoiceNumber}</span>
+          </div>
         </div>
       )}
 

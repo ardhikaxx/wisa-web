@@ -16,6 +16,7 @@ import {
 import { STATUS_COLORS } from '@/lib/constants'
 import { Badge } from '@/components/ui/badge'
 import { PaymentSummary } from '@/components/invoice/payment-summary'
+import { InvoiceQr } from '@/components/invoice/invoice-qr'
 
 interface Props {
   data: InvoiceData
@@ -241,6 +242,13 @@ export function TemplateModern({ data }: Props) {
               className="mt-2 h-24 w-24 rounded-lg border object-contain"
             />
           )}
+          <div className="mt-3 flex items-center gap-3">
+            <InvoiceQr value={invoiceInfo.invoiceNumber} size={64} />
+            <div className="text-[10px] text-muted-foreground">
+              <p className="font-medium text-foreground">Scan untuk lihat invoice</p>
+              <p>{invoiceInfo.invoiceNumber}</p>
+            </div>
+          </div>
         </div>
       )}
 

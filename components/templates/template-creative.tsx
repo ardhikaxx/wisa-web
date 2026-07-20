@@ -14,6 +14,7 @@ import {
   calculateTaxBreakdown,
 } from '@/lib/helpers'
 import { PaymentSummary } from '@/components/invoice/payment-summary'
+import { InvoiceQr } from '@/components/invoice/invoice-qr'
 
 interface Props {
   data: InvoiceData
@@ -201,6 +202,10 @@ export function TemplateCreative({ data }: Props) {
             {paymentInfo.qrisImage && (
               <img src={paymentInfo.qrisImage} alt="QRIS" className="mt-2 h-20 w-20 border object-contain" />
             )}
+            <div className="mt-2 flex items-center gap-2">
+              <InvoiceQr value={invoiceInfo.invoiceNumber} size={48} />
+              <span className="text-[9px] text-muted-foreground">{invoiceInfo.invoiceNumber}</span>
+            </div>
           </div>
         )}
 
